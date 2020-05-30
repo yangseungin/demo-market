@@ -7,29 +7,38 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.BDDAssertions.then;
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.LocalDateTime;
+import java.util.List;
+
+
 
 @SpringBootTest
 class MemberRepositoryTest {
 
-    @Autowired MemberRepository memberRepository;
+    @Autowired
+    MemberRepository memberRepository;
 
     @Test
     @Transactional
 //    @Rollback(false)
-    public void createMember() throws Exception {
+    public void jpa_db_접근() throws Exception {
         //given
-        Member member = new Member();
-        member.setUsername("memberA");
+        Member joinedMember = Member.builder().memberId("yang")
+                .password("1234")
+                .name("양승인")
+                .email("rhfpdk9@naver.com")
+                .joinedDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .build();
+        System.out.println("-----------2");
 
         //when
-        Long savedId = memberRepository.save(member);
-        Member findMember = memberRepository.find(savedId);
+        memberRepository.save(joinedMember);
 
-        then(findMember.getId()).isEqualTo(member.getId());
-        then(findMember.getUsername()).isEqualTo(member.getUsername());
-
+        //then
+        Assertions.assertEquals(joinedMember,memberRepository.findAll().get(0));
     }
+
+
 
 }
