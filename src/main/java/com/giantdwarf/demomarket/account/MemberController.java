@@ -8,7 +8,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.validation.Valid;
@@ -19,7 +22,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MemberController {
 
+
     private final MemberService memberService;
+    private final MemberFormValidator memberFormValidator;
+
+    @InitBinder
+    public void initMemberBinder(WebDataBinder webDataBinder){
+        webDataBinder.addValidators(memberFormValidator);
+    }
 
     @GetMapping("/member/signup")
     public String signupForm(Model model) {

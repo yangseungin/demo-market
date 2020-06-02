@@ -10,16 +10,18 @@ import java.time.LocalDateTime;
 
 @Data
 public class MemberForm {
-//    @NotBlank
+    @NotBlank
+    @Length(min = 3, max = 20)
     private String memberId;
 
-//    @NotBlank
+    @NotBlank
+    @Length(min = 5, max = 20)
     private String password;
 
-//    @NotBlank
+    @NotBlank
     private String name;
 
-//    @Email
-//    @NotBlank
+    @Email
+    @NotBlank
     private String email;
 }
