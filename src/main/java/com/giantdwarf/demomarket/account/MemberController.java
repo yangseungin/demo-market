@@ -38,24 +38,12 @@ public class MemberController {
     }
 
     @PostMapping("/member/signup")
-    public String creatae(@Valid MemberForm form, BindingResult result) {
-
+    public String creatae(@Valid MemberForm memberForm, BindingResult result) {
         if(result.hasErrors()){
             return "member/signup";
         }
 
-        //패스워드 암호화
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-
-        Member member = Member.builder().memberId(form.getMemberId())
-                .password(passwordEncoder.encode(form.getPassword()))
-                .email(form.getEmail())
-                .name(form.getName())
-                .updateDate(LocalDateTime.now())
-                .joinedDate(LocalDateTime.now())
-                .build();
-        memberService.join(member);
+        memberService.join(memberForm);
         return "redirect:/";
     }
 

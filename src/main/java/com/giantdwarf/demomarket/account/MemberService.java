@@ -2,9 +2,12 @@ package com.giantdwarf.demomarket.account;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -16,20 +19,21 @@ public class MemberService {
 
     //회원가입
     @Transactional
-    public Long join(Member member){
-        validateDuplicateMember(member);
-        memberRepository.save(member);
-        return member.getId();
+    public Member join(@Valid MemberForm memberForm){
+        //패스워드 암호화
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        Member member = Member.builder().memberId(memberForm.getMemberId())
+                .password(passwordEncoder.encode(memberForm.getPassword()))
+                .email(memberForm.getEmail())
+                .name(memberForm.getName())
+                .updateDate(LocalDateTime.now())
+                .joinedDate(LocalDateTime.now())
+                .build();
+
+        return memberRepository.save(member);
     }
 
-    //동작안함
-    private void validateDuplicateMember(Member member) {
-        List<Member> findMembers = memberRepository.findByEmailAndName(member.getEmail(), member.getName());
-
-        if(!findMembers.isEmpty()){
-            throw new IllegalStateException("이미 존재하는 회원.");
-        }
-    }
 
     //전체 회원 조회
     public List<Member> findMembers(){
