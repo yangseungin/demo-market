@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -33,20 +34,7 @@ class MemberControllerTest {
                 .param("email","rhfpdk92@naver.com"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"))
-                .andExpect(authenticated().withUsername("yang"))    //Authentication should not be null 실패하는데 왜그럴
-        ;
-    }
-
-    @Test
-    public void 회원가입_성공2() throws Exception{
-        mockMvc.perform(post("/member/signup")
-                .param("memberId","yang")
-                .param("password","12345")
-                .param("name","양승인")
-                .param("email","rhfpdk92@naver.com"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/"))
-                .andExpect(authenticated().withUsername("yang"))    //Authentication should not be null 실패하는데 왜그럴
+                .andExpect(authenticated().withUsername("yang"))
         ;
     }
 

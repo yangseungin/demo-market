@@ -1,5 +1,6 @@
 package com.giantdwarf.demomarket.config;
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,8 +16,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .antMatchers("/**").permitAll()
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/", "/login","/hello", "/member/signup").permitAll()
 //                .mvcMatchers("/", "/login","/hello", "/member/**").permitAll()
                 .anyRequest().authenticated();
 
@@ -24,12 +27,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/**");
-//        web.ignoring().antMatchers("/css/**","/script/**","/fonts/**","image/**","lib/**");
+        web.ignoring()
+                .antMatchers("/resources/**");
     }
 
     @Bean
-    PasswordEncoder passwordEncoder(){
+    PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 }
