@@ -1,8 +1,13 @@
 package com.giantdwarf.demomarket.account;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,12 +21,13 @@ import java.util.List;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     //회원가입
     @Transactional
-    public Member join(@Valid MemberForm memberForm){
+    public Member join(@Valid MemberForm memberForm) {
         //패스워드 암호화
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 
         Member member = Member.builder().memberId(memberForm.getMemberId())
                 .password(passwordEncoder.encode(memberForm.getPassword()))
@@ -36,7 +42,7 @@ public class MemberService {
 
 
     //전체 회원 조회
-    public List<Member> findMembers(){
+    public List<Member> findMembers() {
         return memberRepository.findAll();
     }
 
@@ -44,4 +50,20 @@ public class MemberService {
 //    public Member findOne(Long memberId){
 //        return memberRepository.findOne(memberId);
 //    }
+    public void login(Member member) {
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                member.getMemberId(),
+                member.getPassword(),
+                AuthorityUtils.createAuthorityList("ROLE_USER"));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(principal instanceof UserDetails){
+            System.out.println("principal = " + ((UserDetails) principal).getUsername());
+        }else{
+            System.out.println("principal2 = " + principal.toString()); //??? 왜 여기로 빠지는가
+        }
+        System.out.println("!@#!@"+SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
+    }
 }

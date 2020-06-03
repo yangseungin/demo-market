@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.bind.BindResult;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,7 +45,9 @@ public class MemberController {
             return "member/signup";
         }
 
-        memberService.join(memberForm);
+        Member joinedMember = memberService.join(memberForm);
+        memberService.login(joinedMember);
+
         return "redirect:/";
     }
 
@@ -53,6 +57,7 @@ public class MemberController {
         model.addAttribute("members", members);
         return "member/memberList";
     }
+
 
 
 }
