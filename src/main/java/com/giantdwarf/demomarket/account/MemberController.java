@@ -27,9 +27,10 @@ public class MemberController {
 
     private final MemberService memberService;
     private final MemberFormValidator memberFormValidator;
+    private final MemberRepository memberRepository;
 
     @InitBinder
-    public void initMemberBinder(WebDataBinder webDataBinder){
+    public void initMemberBinder(WebDataBinder webDataBinder) {
         webDataBinder.addValidators(memberFormValidator);
     }
 
@@ -41,23 +42,51 @@ public class MemberController {
 
     @PostMapping("/member/signup")
     public String creatae(@Valid MemberForm memberForm, BindingResult result) {
-        if(result.hasErrors()){
+        if (result.hasErrors()) {
             return "member/signup";
         }
 
         Member joinedMember = memberService.join(memberForm);
-        memberService.login(joinedMember);
+//        memberService.login(joinedMember);
 
         return "redirect:/";
     }
 
-    @GetMapping("member/list")
+    @GetMapping("/member/list")
     public String list(Model model) {
         List<Member> members = memberService.findMembers();
         model.addAttribute("members", members);
         return "member/memberList";
     }
 
+    @GetMapping("/member/forgot")
+    public String forgot(Model model) {
+
+
+        return "member/forgot";
+    }
+
+    @GetMapping("/member/checktoken")
+    public String checkToken(Model model, String email, String token) {
+        Member joindMember = memberRepository.findByEmail(email);
+        String view = "member/checkedEmail";
+        if (joindMember == null){
+            model.addAttribute("error", "emailError");
+            return view;
+        }
+
+        if (!joindMember.isValidToken(token)) {
+            model.addAttribute("error", "tokenError");
+            return view;
+        }
+        joindMember.completeSignup();
+        memberService.login(joindMember);
+
+
+        model.addAttribute("name", joindMember.getName());
+
+        return view;
+    }
 
 
 }

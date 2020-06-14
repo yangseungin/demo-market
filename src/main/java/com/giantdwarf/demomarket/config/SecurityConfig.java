@@ -19,16 +19,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/", "/login","/hello", "/member/signup").permitAll()
-//                .mvcMatchers("/", "/login","/hello", "/member/**").permitAll()
+                .antMatchers("/", "/login", "/hello", "/member/*").permitAll()
                 .anyRequest().authenticated();
+        http.
+                formLogin()
+                .loginPage("/login").permitAll();
+
+
+        http.
+                logout()
+                .logoutSuccessUrl("/");
 
     }
 
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
-                .antMatchers("/resources/**");
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+                .antMatchers("/resources/**").anyRequest()
+        ;
     }
 
     @Bean

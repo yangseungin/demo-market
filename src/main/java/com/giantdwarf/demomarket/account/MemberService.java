@@ -1,6 +1,8 @@
 package com.giantdwarf.demomarket.account;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -22,14 +24,31 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender javaMailSender;
 
     //회원가입
     @Transactional
     public Member join(@Valid MemberForm memberForm) {
-        //패스워드 암호화
 
+        //저장
+        Member newMember = saveMember(memberForm);
+        newMember.generateToken();
+        sendConfirmEmail(newMember);
 
-        Member member = Member.builder().memberId(memberForm.getMemberId())
+        return newMember;
+    }
+
+    private void sendConfirmEmail(Member newMember) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(newMember.getEmail());
+        mailMessage.setSubject("본인 확인 인증");
+        mailMessage.setText("/member/checktoken?email=" + newMember.getEmail() + "&token=" + newMember.getEmailToken());
+        javaMailSender.send(mailMessage);
+    }
+
+    private Member saveMember(@Valid MemberForm memberForm) {
+        Member newMember = Member.builder()
+                .memberId(memberForm.getMemberId())
                 .password(passwordEncoder.encode(memberForm.getPassword()))
                 .email(memberForm.getEmail())
                 .name(memberForm.getName())
@@ -37,7 +56,7 @@ public class MemberService {
                 .joinedDate(LocalDateTime.now())
                 .build();
 
-        return memberRepository.save(member);
+        return memberRepository.save(newMember);
     }
 
 
@@ -56,14 +75,6 @@ public class MemberService {
                 member.getPassword(),
                 AuthorityUtils.createAuthorityList("ROLE_USER"));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(principal instanceof UserDetails){
-            System.out.println("principal = " + ((UserDetails) principal).getUsername());
-        }else{
-            System.out.println("principal2 = " + principal.toString()); //??? 왜 여기로 빠지는가
-        }
-        System.out.println("!@#!@"+SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 
     }
 }
