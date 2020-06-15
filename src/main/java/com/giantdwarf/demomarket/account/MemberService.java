@@ -9,6 +9,8 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +20,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
-public class MemberService {
+public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
@@ -28,13 +30,11 @@ public class MemberService {
 
     //회원가입
     @Transactional
-    public Member join(@Valid MemberForm memberForm) {
-
+    public Member join(MemberForm memberForm) {
         //저장
         Member newMember = saveMember(memberForm);
         newMember.generateToken();
         sendConfirmEmail(newMember);
-
         return newMember;
     }
 
@@ -70,11 +70,26 @@ public class MemberService {
 //        return memberRepository.findOne(memberId);
 //    }
     public void login(Member member) {
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                member.getMemberId(),
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                new UserMember(member),
                 member.getPassword(),
-                AuthorityUtils.createAuthorityList("ROLE_USER"));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+                List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        SecurityContextHolder.getContext().setAuthentication(token);
+        System.out.println("token = " + SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("@@@#"+username);
+        Member member = memberRepository.findByMemberId(username);
+        if(member == null){
+            throw new UsernameNotFoundException(username);
+        }
+
+        return new UserMember(member);
+    }
+    public void completeSignup(Member member) {
+        member.completeSignup();
 
     }
 }

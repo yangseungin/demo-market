@@ -47,7 +47,7 @@ public class MemberController {
         }
 
         Member joinedMember = memberService.join(memberForm);
-//        memberService.login(joinedMember);
+        memberService.login(joinedMember);
 
         return "redirect:/";
     }
@@ -79,10 +79,12 @@ public class MemberController {
             model.addAttribute("error", "tokenError");
             return view;
         }
-        joindMember.completeSignup();
+        memberService.completeSignup(joindMember);
         memberService.login(joindMember);
 
+//        memberRepository.save(joindMember); //...왜 이걸 넣어야지만 변경이될까 -> OSIV.. 트랜잭션 범위밖에서 일어난 일이라 db에 반영이 안됬던것.
 
+        model.addAttribute("memberCounter", memberRepository.count());
         model.addAttribute("name", joindMember.getName());
 
         return view;
