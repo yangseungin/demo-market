@@ -29,7 +29,6 @@ public class MemberService implements UserDetailsService {
     private final JavaMailSender javaMailSender;
 
     //회원가입
-    @Transactional
     public Member join(MemberForm memberForm) {
         //저장
         Member newMember = saveMember(memberForm);
@@ -42,7 +41,7 @@ public class MemberService implements UserDetailsService {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(newMember.getEmail());
         mailMessage.setSubject("본인 확인 인증");
-        mailMessage.setText("/member/checktoken?email=" + newMember.getEmail() + "&token=" + newMember.getEmailToken());
+        mailMessage.setText("http://localhost:8080/member/checktoken?email=" + newMember.getEmail() + "&token=" + newMember.getEmailToken());
         javaMailSender.send(mailMessage);
     }
 
@@ -78,9 +77,9 @@ public class MemberService implements UserDetailsService {
         System.out.println("token = " + SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("@@@#"+username);
         Member member = memberRepository.findByMemberId(username);
         if(member == null){
             throw new UsernameNotFoundException(username);
@@ -90,6 +89,7 @@ public class MemberService implements UserDetailsService {
     }
     public void completeSignup(Member member) {
         member.completeSignup();
+        login(member);
 
     }
 }
